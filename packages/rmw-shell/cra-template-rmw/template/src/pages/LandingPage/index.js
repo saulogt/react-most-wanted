@@ -1,20 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, lazy, Suspense } from 'react'
 import AppBar from '@material-ui/core/AppBar'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import Typography from '@material-ui/core/Typography'
-import Button from '@material-ui/core/Button'
-import { useHistory } from 'react-router-dom'
-import formatMessage from './messages'
 import { Helmet } from 'react-helmet'
-import Card from '@material-ui/core/Card'
 import Paper from '@material-ui/core/Paper'
-import CardContent from '@material-ui/core/CardContent'
 import { Scrollbars } from 'react-custom-scrollbars'
 import Toolbar from '@material-ui/core/Toolbar'
-import TrackChanges from '@material-ui/icons/TrackChanges'
-import FileCopy from '@material-ui/icons/FileCopy'
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import IconButton from '@material-ui/core/IconButton'
+import CircularProgress from '@material-ui/core/CircularProgress'
+import Button from '@material-ui/core/Button'
+import { useHistory } from 'react-router-dom'
+
+const PageContent = lazy(() => import('./PageContent'))
+const Footer = lazy(() => import('./Footer'))
+const ResponsiveMenu = lazy(() => import('containers/ResponsiveMenu'))
 
 const theme = createMuiTheme({
   palette: {
@@ -25,59 +23,37 @@ const theme = createMuiTheme({
   },
 })
 
-const PackageCard = ({ title, command, description, icons }) => {
-  return (
-    <Card elevation={4} style={{ margin: 18, maxWidth: 350 }}>
-      <CardContent>
-        <Typography gutterBottom variant="h4" component="h2">
-          {title}
-        </Typography>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            backgroundColor: '#F3F4F4',
-            padding: 8,
-          }}
-        >
-          <Typography
-            gutterBottom
-            variant="body1"
-            color="textSecondary"
-            component="h2"
-          >
-            {command}
-          </Typography>
-          <IconButton
-            onClick={() => {
-              if (window.clipboardData) {
-                // Internet Explorer
-                window.clipboardData.setData('Text', command)
-              } else {
-                try {
-                  navigator.clipboard.writeText(command)
-                } catch (error) {}
-              }
-            }}
-          >
-            <FileCopy />
-          </IconButton>
-        </div>
-        <br />
-        {icons}
-        <br />
-        <Typography variant="body2" component="div">
-          {description}
-        </Typography>
-      </CardContent>
-    </Card>
-  )
-}
-
 const LandingPage = () => {
-  const history = useHistory()
   const [scrollbar, setScrollbar] = useState(null)
   const [transparent, setTransparent] = useState(true)
+  const [scrolled, setScrolled] = useState(false)
+  const [components, setComponents] = useState(null)
+  const [top, setTop] = useState(null)
+  const history = useHistory()
+
+  const scrollTo = (e) => {
+    e &&
+      e.scrollIntoView({
+        behavior: 'smooth',
+        alignToTop: true,
+      })
+  }
+
+  const sections = [
+    {
+      name: 'start',
+      onClick: () => history.push('/dashboard'),
+    },
+    {
+      name: 'components',
+      onClick: () => {
+        setScrolled(true)
+        setTimeout(() => {
+          scrollTo(components)
+        }, 500)
+      },
+    },
+  ]
 
   return (
     <ThemeProvider theme={theme}>
@@ -90,6 +66,7 @@ const LandingPage = () => {
             content="width=device-width, initial-scale=1, minimum-scale=1, minimal-ui"
           />
           <link rel="shortcut icon" href="/favicon.ico" />
+          <link rel="canonical" href="https://www.react-most-wanted.com" />
           <meta
             name="keywords"
             content={
@@ -113,6 +90,7 @@ const LandingPage = () => {
           }}
           onScroll={(e) => {
             setTransparent(scrollbar.viewScrollTop < 100)
+            setScrolled(true)
           }}
           autoHide
           style={{ width: '100%', height: '100vh' }}
@@ -129,18 +107,39 @@ const LandingPage = () => {
             }}
             position="static"
           >
-            <Toolbar>
-              <Typography style={{ fontFamily: 'fantasy' }}>
-                React Most Wanted
-              </Typography>
+            <Toolbar disableGutters>
+              <div
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  scrollTo(top)
+                }}
+              >
+                <img
+                  src={'/rmw.svg'}
+                  alt="logo"
+                  style={{
+                    height: 35,
+                    justifySelf: 'center',
+                    color: 'white',
+                    marginLeft: 12,
+                    display: transparent ? 'none' : undefined,
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1 }} />
+
+              <Suspense fallback={<CircularProgress />}>
+                <ResponsiveMenu sections={sections} />
+              </Suspense>
             </Toolbar>
           </AppBar>
           <div style={{ width: '100%', height: '100%' }}>
             <div
+              ref={(r) => r && setTop(r)}
               style={{
                 height: '100vh',
                 width: '100%',
-                backgroundImage: 'url(background.webp)',
+                backgroundColor: 'black',
                 backgroundRepeat: 'no-repeat',
                 backgroundAttachment: 'fixed',
                 backgroundSize: 'cover',
@@ -160,35 +159,32 @@ const LandingPage = () => {
                 <img
                   src={'/rmw.svg'}
                   alt="logo"
-                  style={{ height: 150, maxWidth: 280 }}
+                  style={{ height: 150, maxWidth: 280, justifySelf: 'center' }}
                 />
 
-                <Typography
-                  variant="h2"
-                  align="center"
-                  component="h3"
-                  color="inherit"
-                  gutterBottom
-                  style={{
-                    color: 'white',
-                    marginTop: 18,
-                    textAlign: 'center',
-                    fontSize: 'bold',
-                    fontFamily: 'fantasy',
-                  }}
-                >
-                  REACT MOST WANTED
-                </Typography>
+                <div style={{ padding: 8 }}>
+                  <h3
+                    style={{
+                      color: 'red',
+                      textAlign: 'center',
+                      fontWeight: 'bold',
+                      fontSize: 50,
+                    }}
+                  >
+                    REACT MOST WANTED
+                  </h3>
 
-                <Typography
-                  variant="h5"
-                  component="h2"
-                  color="inherit"
-                  gutterBottom
-                  style={{ color: 'white', textAlign: 'center' }}
-                >
-                  {formatMessage('intro')}
-                </Typography>
+                  <h4
+                    style={{
+                      color: 'white',
+                      textAlign: 'center',
+                      fontSize: 25,
+                      marginTop: -40,
+                    }}
+                  >
+                    React Starter-Kit with all Most Wanted features
+                  </h4>
+                </div>
               </div>
             </div>
             <div
@@ -202,7 +198,12 @@ const LandingPage = () => {
             >
               <Paper
                 elevation={3}
-                style={{ width: '100%', maxWidth: '90%', borderRadius: 15 }}
+                style={{
+                  width: '100%',
+                  maxWidth: '90%',
+                  borderRadius: 15,
+                  minHeight: 400,
+                }}
               >
                 <div
                   style={{
@@ -219,6 +220,7 @@ const LandingPage = () => {
                       borderRadius: '40px',
                       fontSize: 'bold',
                     }}
+                    aria-label="Start button"
                     variant="contained"
                     color="secondary"
                     name={'signin'}
@@ -226,233 +228,22 @@ const LandingPage = () => {
                       history.push('/dashboard')
                     }}
                   >
-                    {formatMessage('start')}
+                    Start
                   </Button>
                 </div>
-                <div style={{ height: 20 }} />
-                <Typography
-                  variant="h3"
-                  //color="textSecondary"
-                  style={{ margin: 16, textAlign: 'center' }}
-                >
-                  A solution for every project
-                </Typography>
-                <Typography
-                  variant="h5"
-                  color="textSecondary"
-                  style={{ margin: 16, textAlign: 'center' }}
-                >
-                  Choose from 3 different starter kits. From a basic one to a
-                  full featured application.
-                </Typography>
-                <div style={{ height: 30 }} />
-
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    alignItems: 'space-around',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <PackageCard
-                    title={'base-shell'}
-                    command={'npx create-react-app my-app --template base'}
-                    description={
-                      'The basic react setup: routing, internationalization and async load.'
-                    }
-                    icons={
-                      <div
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'space-around',
-                        }}
-                      >
-                        <img
-                          src="react.png"
-                          alt="react"
-                          style={{ width: 50 }}
-                        />
-                      </div>
-                    }
-                  />
-                  <PackageCard
-                    title={'material-ui-shell'}
-                    command={
-                      'npx create-react-app my-app --template material-ui'
-                    }
-                    description={
-                      'Includes all features from the base shell expanded with Material-UI.'
-                    }
-                    icons={
-                      <div
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'space-around',
-                        }}
-                      >
-                        <img
-                          src="react.png"
-                          alt="react"
-                          style={{ width: 50 }}
-                        />
-                        <img
-                          src="material-ui.png"
-                          alt="react"
-                          style={{ width: 50 }}
-                        />
-                      </div>
-                    }
-                  />
-                  <PackageCard
-                    title={'rmw-shell'}
-                    command={'npx create-react-app my-app --template rmw'}
-                    description={'Base shell + Material UI shell + Firebase'}
-                    icons={
-                      <div
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          justifyContent: 'space-around',
-                        }}
-                      >
-                        <img
-                          src="react.png"
-                          alt="react"
-                          style={{ width: 50 }}
-                        />
-                        <img
-                          src="material-ui.png"
-                          alt="react"
-                          style={{ width: 50 }}
-                        />
-                        <img
-                          src="firebase.png"
-                          alt="react"
-                          style={{ width: 50 }}
-                        />
-                      </div>
-                    }
-                  />
-                </div>
-                <div style={{ height: 30 }} />
-                <div
-                  style={{
-                    //height: 400,
-                    backgroundColor: '#2D2D2D',
-                    backgroundImage: 'radial-gradient( #4F4F4F,#242424)',
-                  }}
-                >
-                  <div style={{ height: 30 }} />
-                  <Typography
-                    variant="h3"
-                    //color="textSecondary"
-                    style={{ margin: 16, textAlign: 'center', color: 'white' }}
-                  >
-                    Not just a template
-                  </Typography>
-                  <Typography
-                    variant="h5"
-                    style={{ margin: 16, textAlign: 'center', color: 'grey' }}
-                  >
-                    But also not a framework.
-                  </Typography>
-                  <div
-                    style={{
-                      width: '100%',
-                      display: 'flex',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <TrackChanges style={{ fontSize: 150, color: 'white' }} />
-                  </div>
-                  <Typography
-                    variant="h5"
-                    style={{ margin: 16, textAlign: 'center', color: 'grey' }}
-                  >
-                    You start easy like with every other template but you can
-                    also update the template parts over the time. And with the
-                    updates you don't only update the components but also get
-                    new features and get bugfixes.
-                  </Typography>
-                  <div style={{ height: 50 }} />
-                </div>
-
-                <div style={{ height: 30 }} />
-                <Typography
-                  variant="h3"
-                  //color="textSecondary"
-                  style={{ margin: 16, textAlign: 'center' }}
-                >
-                  Only the best
-                </Typography>
-                <Typography
-                  variant="h5"
-                  color="textSecondary"
-                  style={{ margin: 16, textAlign: 'center' }}
-                >
-                  Every template is a collection of very carefully picked
-                  packages and projects. Only the creme de la creme of the react
-                  ecosystem
-                </Typography>
-                <div style={{ height: 30 }} />
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    flexWrap: 'wrap',
-                  }}
-                >
-                  <img src="react.png" alt="react" style={{ width: 150 }} />
-                  <img
-                    src="material-ui.png"
-                    alt="react"
-                    style={{ width: 150 }}
-                  />
-                  <img src="firebase.png" alt="react" style={{ width: 150 }} />
-                </div>
-                <div style={{ height: 50 }} />
+                {scrolled && (
+                  <Suspense fallback={<CircularProgress />}>
+                    <PageContent setComponents={setComponents} />
+                  </Suspense>
+                )}
               </Paper>
             </div>
             <div style={{ height: 200 }}></div>
-
-            <div
-              style={{
-                height: '400px',
-                //width: '100%',
-                backgroundImage: 'url(bottom.jpg)',
-                backgroundRepeat: 'no-repeat',
-                backgroundAttachment: 'fixed',
-                backgroundPosition: 'center',
-                backgroundSize: 'cover',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexDirection: 'column',
-              }}
-            ></div>
-            <AppBar
-              position="relative"
-              style={{
-                //position: 'absolute',
-                width: '100%',
-                padding: 18,
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: 50,
-                bottom: 0,
-                left: 0,
-                right: 0,
-              }}
-              id="footer-text"
-            >
-              {`© ${new Date().getFullYear()} Copyright: yourcompany.com! All Rights Reserved`}
-            </AppBar>
+            {scrolled && (
+              <Suspense fallback={<CircularProgress />}>
+                <Footer />
+              </Suspense>
+            )}
           </div>
         </Scrollbars>
       </React.Fragment>

@@ -3,13 +3,7 @@
     "admins": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null || root.child('admins/'+auth.uid).exists()"
-      }
-    },
-    "predefined_chat_messages": {
-      ".read": "auth != null",
-      "$uid": {
-        ".write": "auth != null"
+        ".write": "root.child('admins/'+auth.uid).exists()"
       }
     },
     "users": {
@@ -44,8 +38,8 @@
     },
     "group_chat_messages": {
       "$groupUid": {
-        ".read": "auth != null && root.child('group_chats/'+$groupUid+'/members/'+auth.uid).exists()",
-        ".write": "auth != null && root.child('group_chats/'+$groupUid+'/members/'+auth.uid).exists()"
+        ".read": "auth != null && (root.child('group_chats/'+$groupUid+'/members/'+auth.uid).exists() || root.child('group_chats/'+$groupUid+'/members/all').exists())",
+        ".write": "auth != null && (root.child('group_chats/'+$groupUid+'/members/'+auth.uid).exists() || root.child('group_chats/'+$groupUid+'/members/all').exists())"
       }    
     },
     "user_chat_messages": {

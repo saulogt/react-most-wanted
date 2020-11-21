@@ -4,6 +4,7 @@ import Business from '@material-ui/icons/Business'
 import ChromeReaderMode from '@material-ui/icons/ChromeReaderMode'
 import DaschboardIcon from '@material-ui/icons/Dashboard'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
+import Web from '@material-ui/icons/Web'
 import GetApp from '@material-ui/icons/GetApp'
 import InfoOutlined from '@material-ui/icons/InfoOutlined'
 import LanguageIcon from '@material-ui/icons/Language'
@@ -112,6 +113,15 @@ const getMenuItems = (props) => {
       leftIcon: isAuthorised ? <ExitToAppIcon /> : <LockIcon />,
     },
     {
+      value: '/',
+      visible: isAuthorised,
+      primaryText: intl.formatMessage({
+        id: 'landing_page',
+        defaultMessage: 'Landing Page',
+      }),
+      leftIcon: <Web />,
+    },
+    {
       value: '/dashboard',
       visible: isAuthorised,
       primaryText: intl.formatMessage({
@@ -137,10 +147,19 @@ const getMenuItems = (props) => {
         id: 'demos',
         defaultMessage: 'Demos',
       }),
-      visible: isGranted(auth, 'read_companies'),
+      visible: isAuthorised,
       primaryTogglesNestedList: true,
       leftIcon: <Slideshow />,
       nestedItems: [
+        {
+          value: '/admin',
+          visible: !isGranted(auth, 'administration'),
+          primaryText: intl.formatMessage({
+            id: 'admin',
+            defaultMessage: 'Admin',
+          }),
+          leftIcon: <Security />,
+        },
         {
           value: '/companies',
           visible: isGranted(auth, 'read_companies'),
@@ -156,6 +175,26 @@ const getMenuItems = (props) => {
           primaryText: intl.formatMessage({
             id: 'tasks',
             defaultMessage: 'Tasks',
+          }),
+          leftIcon: <Assignment />,
+        },
+      ],
+    },
+    {
+      primaryText: intl.formatMessage({
+        id: 'documentation',
+        defaultMessage: 'Doumentation',
+      }),
+      visible: isAuthorised,
+      primaryTogglesNestedList: true,
+      leftIcon: <Assignment />,
+      nestedItems: [
+        {
+          value: '/docu/getting_started',
+          visible: isAuthorised,
+          primaryText: intl.formatMessage({
+            id: 'getting_started',
+            defaultMessage: 'Getting started',
           }),
           leftIcon: <Assignment />,
         },
